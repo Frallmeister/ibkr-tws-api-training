@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ibkr-tws-api-training"
+version = "0.1.0"
+description = "Learning material for the native Interactive Brokers TWS API in Python"
+requires-python = ">=3.11"
+dependencies = [
+    "mkdocs>=1.6,<2",
+    "mkdocs-material>=9.5,<10",
+]
+
+[tool.setuptools]
+packages = []
