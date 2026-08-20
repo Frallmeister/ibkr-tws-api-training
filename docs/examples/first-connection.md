@@ -17,6 +17,30 @@ The runnable file is:
 examples/01_connection/current_time.py
 ```
 
+## Prepare the environment
+
+This repository uses `uv` for its environment and dependencies.
+
+From the repository root:
+
+```powershell
+uv sync
+```
+
+The official TWS API Python client is distributed with the TWS API download rather than through a supported IBKR package on PyPI. Install the local `pythonclient` source into this repository's uv environment. With the default Windows API installation, for example:
+
+```powershell
+uv pip install "C:\TWS API\source\pythonclient"
+```
+
+If you installed the TWS API elsewhere, replace the path accordingly.
+
+Confirm that the environment can import the API:
+
+```powershell
+uv run python -c "import ibapi; print(ibapi.__file__)"
+```
+
 ## Before running the example
 
 Start TWS and log in to your paper-trading session. In the TWS API settings:
@@ -202,7 +226,7 @@ This is different from a streaming-market-data application, where the event loop
 From the repository root:
 
 ```powershell
-python examples/01_connection/current_time.py
+uv run python examples/01_connection/current_time.py
 ```
 
 A successful run should look broadly like:
