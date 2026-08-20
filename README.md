@@ -19,18 +19,50 @@ The material focuses on:
 
 The material intentionally does **not** cover options, futures, forex, or strategy development.
 
+## Tooling
+
+This repository uses [uv](https://docs.astral.sh/uv/) for environment and dependency management and [Ruff](https://docs.astral.sh/ruff/) for linting and formatting.
+
+Create/synchronize the environment from the repository root:
+
+```powershell
+uv sync
+```
+
+Run the documentation site locally:
+
+```powershell
+uv run mkdocs serve
+```
+
+Run the checks used for the Python examples:
+
+```powershell
+uv run ruff check .
+uv run ruff format --check .
+```
+
+To apply Ruff formatting locally:
+
+```powershell
+uv run ruff format .
+```
+
+The project currently declares Python `>=3.11` rather than requiring Python 3.14 specifically. Newer Python versions can be used when the locally installed IBKR API is compatible with them.
+
+> The Interactive Brokers TWS API package itself is installed separately using the official IBKR distribution. The examples assume that `ibapi` is importable in the uv-managed environment. We deliberately do not depend on the stale `ibapi` package published on PyPI.
+
 ## Documentation
 
 The course is built with [MkDocs](https://www.mkdocs.org/) and Material for MkDocs.
 
+After `uv sync`, start it with:
+
 ```powershell
-python -m pip install -e .
-mkdocs serve
+uv run mkdocs serve
 ```
 
 Then open the local address printed by MkDocs.
-
-> The Interactive Brokers TWS API package itself is installed separately using the official IBKR distribution. The examples assume that `ibapi` is importable in the active Python environment.
 
 ## Learning philosophy
 
