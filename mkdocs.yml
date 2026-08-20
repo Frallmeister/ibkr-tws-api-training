@@ -1,0 +1,30 @@
+site_name: IBKR TWS API Training
+site_description: A conceptual and practical guide to the native Interactive Brokers TWS API in Python
+repo_url: https://github.com/Frallmeister/ibkr-tws-api-training
+repo_name: Frallmeister/ibkr-tws-api-training
+
+nav:
+  - Home: index.md
+  - Fundamentals:
+      - TWS API architecture: fundamentals/architecture.md
+      - EClient and EWrapper: fundamentals/eclient-ewrapper.md
+  - Examples:
+      - First connection: examples/first-connection.md
+
+-theme: &material_theme material
+
+theme:
+  name: *material_theme
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - toc:
+      permalink: true
