@@ -11,10 +11,8 @@ nav:
   - Examples:
       - First connection: examples/first-connection.md
 
--theme: &material_theme material
-
 theme:
-  name: *material_theme
+  name: material
   features:
     - navigation.sections
     - navigation.indexes
