@@ -19,14 +19,16 @@ The material focuses on:
 
 The material intentionally does **not** cover options, futures, forex, or strategy development.
 
-## Tooling
+## Getting started
 
-This repository uses [uv](https://docs.astral.sh/uv/) for environment and dependency management and [Ruff](https://docs.astral.sh/ruff/) for linting and formatting.
+This repository uses [uv](https://docs.astral.sh/uv/) for its normal Python dependencies and environment management. The official IBKR Python client is installed separately from the TWS API download.
 
-Create/synchronize the environment from the repository root:
+Start with the **Getting started** section in the MkDocs site for the complete setup, including the important interaction between `uv sync` and the separately installed `ibapi` package.
+
+Create the locked project environment:
 
 ```powershell
-uv sync
+uv sync --locked
 ```
 
 Run the documentation site locally:
@@ -35,11 +37,14 @@ Run the documentation site locally:
 uv run mkdocs serve
 ```
 
-Run the checks used for the Python examples:
+## Tooling
+
+Run the local quality checks with:
 
 ```powershell
 uv run ruff check .
 uv run ruff format --check .
+uv run mkdocs build --strict
 ```
 
 To apply Ruff formatting locally:
@@ -48,21 +53,25 @@ To apply Ruff formatting locally:
 uv run ruff format .
 ```
 
-The project currently declares Python `>=3.11` rather than requiring Python 3.14 specifically. Newer Python versions can be used when the locally installed IBKR API is compatible with them.
+The project currently declares Python `>=3.11`. Newer Python versions can be used when the locally installed IBKR API is compatible with them.
 
-> The Interactive Brokers TWS API package itself is installed separately using the official IBKR distribution. The examples assume that `ibapi` is importable in the uv-managed environment. We deliberately do not depend on the stale `ibapi` package published on PyPI.
+> The Interactive Brokers TWS API package itself is installed separately using the official IBKR distribution. We deliberately do not depend on the stale `ibapi` package published on PyPI.
 
-## Documentation
+## Course roadmap
 
-The course is built with [MkDocs](https://www.mkdocs.org/) and Material for MkDocs.
+The documentation contains an explicit roadmap covering:
 
-After `uv sync`, start it with:
+1. getting started;
+2. fundamentals;
+3. contracts and stock identification;
+4. market data;
+5. accounts and positions;
+6. orders;
+7. executions and fills;
+8. robustness;
+9. reference material.
 
-```powershell
-uv run mkdocs serve
-```
-
-Then open the local address printed by MkDocs.
+Planned pages are included in the navigation with notes describing their intended purpose, coverage, dependencies, and place in the learning sequence. They are deliberately marked as planned until substantive material is written.
 
 ## Learning philosophy
 
