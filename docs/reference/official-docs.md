@@ -2,18 +2,24 @@
 
 > **Status:** Planned
 
+For an introduction to the official resources and how to navigate them, start with [Using the official IBKR documentation](../getting-started/ibkr-documentation.md).
+
 ## Purpose
-Map each course topic to the current authoritative IBKR Campus documentation and API reference so this guide remains a companion to the source material rather than a substitute for it.
+
+Provide a compact topic-by-topic lookup map once the main course content exists. This page should answer questions such as:
+
+> I already understand this concept. Which IBKR page should I open for the authoritative details?
+
+It complements the getting-started page rather than repeating it.
 
 ## Intended coverage
-- current TWS API introduction and architecture documentation;
-- connectivity and configuration references;
-- object/class API reference links;
-- contracts, market data, accounts, orders, and executions;
-- error-code and pacing references;
-- notes when older `interactivebrokers.github.io` pages are still useful but no longer the primary documentation.
 
-Links should be reviewed for freshness when substantive chapters are written.
+- map each completed course chapter to the current IBKR Campus documentation;
+- link the corresponding object, method, and callback reference pages where useful;
+- include relevant error-code, pacing, and changelog references;
+- identify legacy `interactivebrokers.github.io` pages only when they add useful detail not yet represented as clearly in current Campus material;
+- keep links current as IBKR reorganizes its documentation.
 
 ## Depends on
-The roadmap as a whole.
+
+The substantive course chapters. Build this map incrementally as those chapters are completed.
