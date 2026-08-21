@@ -10,11 +10,58 @@ use_directory_urls: false
 
 nav:
   - Home: index.md
+  - Course roadmap: roadmap.md
+  - Getting started:
+      - Overview: getting-started/index.md
+      - Installation and environment: getting-started/installation.md
+      - Configure TWS: getting-started/tws-configuration.md
+      - Running the examples: getting-started/running-examples.md
   - Fundamentals:
       - TWS API architecture: fundamentals/architecture.md
       - EClient and EWrapper: fundamentals/eclient-ewrapper.md
+      - Connection lifecycle and event loop: fundamentals/connection-lifecycle.md
+      - Callback patterns: fundamentals/callback-patterns.md
+      - Identifiers: fundamentals/identifiers.md
+      - Core object model: fundamentals/object-model.md
+      - Errors and messages: fundamentals/errors-and-messages.md
+  - Contracts:
+      - The Contract object: contracts/contract-object.md
+      - U.S. stock contracts: contracts/us-stock-contracts.md
+      - Contract resolution: contracts/contract-resolution.md
+      - SMART routing and conId: contracts/routing-and-conid.md
+  - Market data:
+      - Historical bars: market-data/historical-bars.md
+      - Streaming market data: market-data/streaming-market-data.md
+      - Tick types and attributes: market-data/tick-types.md
+      - Real-time bars: market-data/realtime-bars.md
+      - Market-data types and permissions: market-data/permissions.md
+  - Accounts and positions:
+      - Accounts and account values: accounts/account-values.md
+      - Positions and portfolio state: accounts/positions.md
+      - P&L subscriptions: accounts/pnl.md
+  - Orders:
+      - The Order object: orders/order-object.md
+      - Placing a basic stock order: orders/placing-orders.md
+      - Order lifecycle: orders/order-lifecycle.md
+      - Modifying and cancelling: orders/modify-cancel.md
+      - Stock order types: orders/order-types.md
+      - Attached and bracket orders: orders/bracket-orders.md
+      - Time in force and outside RTH: orders/tif-rth.md
+  - Executions and fills:
+      - Executions and execDetails: executions/executions.md
+      - Partial fills: executions/partial-fills.md
+      - Commission information: executions/commissions.md
+  - Robustness:
+      - Connectivity and reconnects: robustness/connectivity.md
+      - Error handling: robustness/error-handling.md
+      - Pacing limits: robustness/pacing.md
+      - Clean shutdown: robustness/shutdown.md
   - Examples:
       - First connection: examples/first-connection.md
+  - Reference:
+      - Terminology and definitions: reference/terminology.md
+      - Callback-pattern reference: reference/callback-reference.md
+      - Official IBKR documentation map: reference/official-docs.md
 
 theme:
   name: material
