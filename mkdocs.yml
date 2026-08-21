@@ -16,6 +16,7 @@ nav:
       - Installation and environment: getting-started/installation.md
       - Configure TWS: getting-started/tws-configuration.md
       - Running the examples: getting-started/running-examples.md
+      - Using the official IBKR documentation: getting-started/ibkr-documentation.md
   - Fundamentals:
       - TWS API architecture: fundamentals/architecture.md
       - EClient and EWrapper: fundamentals/eclient-ewrapper.md
