@@ -18,15 +18,13 @@ Typical questions are:
 
 > What happens when an API client connects to TWS?
 
+The documentation also contains lookup pages for topics that are easier to use as tables, such as the [Error Codes](https://www.interactivebrokers.com/docs/tws-api/doc/error-handling/error-codes) page.
+
 ### TWS API reference
 
 Use the [TWS API reference](https://www.interactivebrokers.com/docs/tws-api/ref/introduction) when you already understand the concept and need exact class, field, method, or callback information.
 
-For example:
-
-- [Contract class reference](https://www.interactivebrokers.com/docs/tws-api/ref/contract-class-reference/introduction)
-- [ContractDetails class reference](https://www.interactivebrokers.com/docs/tws-api/ref/contract-details-class-reference)
-- [Error codes](https://www.interactivebrokers.com/docs/tws-api/ref/error-codes)
+For example, the reference navigation contains the `Contract` and `ContractDetails` class references used later in this course.
 
 A useful distinction is:
 
