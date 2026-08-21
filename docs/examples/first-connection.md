@@ -191,14 +191,26 @@ From the repository root:
 uv run python examples/01_connection/current_time.py
 ```
 
-A successful run should look broadly like:
+A successful run can look like this:
 
 ```text
-Connected. Next valid order ID: 123
-IBKR server time: 2026-08-21T00:00:00+02:00
+Connected. Next valid order ID: 1
+ERROR -1 ... 2104 Market data farm connection is OK:usfarm
+ERROR -1 ... 2106 HMDS data farm connection is OK:euhmds
+IBKR server time: 2026-08-22T01:50:02+02:00
 ```
 
-The exact order ID and timestamp will differ.
+The exact order ID, timestamp, farm names, and number of status messages will differ.
+
+### Why do successful runs print `ERROR`?
+
+IBKR sends warnings, status notifications, and genuine errors through the same error-message mechanism. Codes `2104` and `2106` are normal connection-status notifications: they report that market-data and historical-data farms are connected.
+
+The `-1` indicates that the message is not associated with one specific API request.
+
+This also shows an important property of the API: messages from different parts of the TWS session can arrive between a request and its response. In the run above, connection-status messages arrive after `nextValidId()` and before `currentTime()`.
+
+We leave those messages visible in this first example rather than filtering them out. Error handling and message classification are covered later in the guide.
 
 ## Things to inspect yourself
 
