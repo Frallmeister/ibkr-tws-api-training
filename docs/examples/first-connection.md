@@ -173,12 +173,9 @@ self.reqCurrentTime()
 
 Conceptually:
 
-```text
-CurrentTimeApp
-     │
-     │ EClient.reqCurrentTime()
-     ▼
-TWS
+```mermaid
+flowchart LR
+    App["CurrentTimeApp"] -->|"EClient.reqCurrentTime()"| TWS["TWS"]
 ```
 
 There is no useful return value containing the time.
@@ -193,18 +190,11 @@ def currentTime(self, time: int) -> None:
 
 Conceptually:
 
-```text
-TWS
- │
- │ current-time message
- ▼
-message decoder
- │
- ▼
-EWrapper.currentTime(...)
- │
- ▼
-CurrentTimeApp.currentTime(...)
+```mermaid
+flowchart LR
+    TWS["TWS"] -->|"Current-time message"| Decoder["Message decoder"]
+    Decoder --> Wrapper["EWrapper.currentTime(...)"]
+    Wrapper --> App["CurrentTimeApp.currentTime(...)"]
 ```
 
 Our override converts the Unix timestamp to a timezone-aware local `datetime` and prints it.

@@ -34,12 +34,26 @@ def historicalData(self, reqId, bar) -> None:
 
 A useful mental model is:
 
-```text
-                EClient
-Your code ─────────────────► TWS
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant Python as Your code
+    participant TWS
 
-                EWrapper
-Your code ◄───────────────── TWS
+    Python->>TWS: EClient request or command
+    TWS-->>Python: EWrapper callback or event
 ```
 
 ## Why do we override inherited methods?
@@ -146,12 +160,26 @@ The more important concept is the division of responsibilities.
 
 Even if a future application wrapped these classes behind separate components, the underlying API would still behave as:
 
-```text
-outgoing request/command
-        ↓
-TWS
-        ↓
-incoming callback/event
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant Python as Python application
+    participant TWS
+
+    Python->>TWS: Request or command
+    TWS-->>Python: Callback or event
 ```
 
 We therefore use the conventional combined class in early examples, not because it is the only possible architecture, but because it exposes the native API model directly.
@@ -167,14 +195,29 @@ Callbacks are a natural fit for data that may arrive:
 
 A market-data subscription is the clearest example. After subscribing, the application may receive updates for minutes or hours:
 
-```text
-reqMktData(...)
-      ↓
-tickPrice(...)
-tickSize(...)
-tickPrice(...)
-tickSize(...)
-...
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant Python
+    participant TWS
+
+    Python->>TWS: reqMktData(...)
+    loop Updates
+        TWS-->>Python: tickPrice(...)
+        TWS-->>Python: tickSize(...)
+    end
 ```
 
 There is no sensible single return value from `reqMktData()` that could represent all future ticks.

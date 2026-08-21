@@ -4,18 +4,14 @@ Before learning individual API calls, it helps to understand what the TWS API ac
 
 The native Python package is not a conventional library where a function call returns the requested broker data directly. Your Python process connects to a running Trader Workstation (TWS) or IB Gateway process over a TCP socket. Requests are encoded and sent to TWS, while responses and events arrive asynchronously and are dispatched back into your code through callbacks.
 
-```text
-Your Python process
-        │
-        │ TCP socket
-        ▼
-TWS / IB Gateway
-        │
-        ▼
-Interactive Brokers infrastructure
-        │
-        ▼
-Exchanges and market-data systems
+```mermaid
+flowchart TB
+    Python[Your Python process]
+    Gateway[TWS / IB Gateway]
+    IBKR[Interactive Brokers infrastructure]
+    Markets[Exchanges and market-data systems]
+
+    Python -->|TCP socket| Gateway --> IBKR --> Markets
 ```
 
 This distinction explains most of the API's design.
@@ -43,17 +39,27 @@ bars = client.get_historical_bars("NVDA")
 
 The mental model is:
 
-```text
-call function
-    ↓
-wait
-    ↓
-receive return value
+```mermaid
+flowchart LR
+    Call[Call function] --> Wait[Wait] --> Result[Receive return value]
 ```
 
 The native TWS API works differently. A historical-data request is conceptually closer to this:
 
 ```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
 sequenceDiagram
     participant Python
     participant TWS
@@ -73,12 +79,26 @@ This is why understanding the distinction between sending and receiving is more 
 
 The Python API exposes two central classes:
 
-```text
-EClient
-Your application ─────────────────────► TWS
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant App as Python application
+    participant TWS
 
-EWrapper
-Your application ◄───────────────────── TWS
+    App->>TWS: EClient request or command
+    TWS-->>App: EWrapper callback or event
 ```
 
 `EClient` contains methods used to send requests and commands. Examples include:
@@ -110,32 +130,79 @@ Not every interaction follows exactly the same pattern. A useful taxonomy is:
 
 ### One request, one callback
 
-```text
-reqCurrentTime()
-      ↓
-currentTime(...)
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant Python
+    participant TWS
+
+    Python->>TWS: reqCurrentTime()
+    TWS-->>Python: currentTime(...)
 ```
 
 ### One request, many callbacks, then an end marker
 
-```text
-reqContractDetails(...)
-      ↓
-contractDetails(...)
-contractDetails(...)
-      ↓
-contractDetailsEnd(...)
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant Python
+    participant TWS
+
+    Python->>TWS: reqContractDetails(...)
+    TWS-->>Python: contractDetails(...)
+    TWS-->>Python: contractDetails(...)
+    TWS-->>Python: contractDetailsEnd(...)
 ```
 
 ### Subscription until cancelled
 
-```text
-reqMktData(...)
-      ↓
-tickPrice(...)
-tickSize(...)
-tickPrice(...)
-...
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant Python
+    participant TWS
+
+    Python->>TWS: reqMktData(...)
+    loop Updates
+        TWS-->>Python: tickPrice(...)
+        TWS-->>Python: tickSize(...)
+    end
 ```
 
 The stream continues until the subscription is cancelled or the connection ends.
@@ -144,14 +211,30 @@ The stream continues until the subscription is cancelled or the connection ends.
 
 Orders are more stateful:
 
-```text
-placeOrder(...)
-      ↓
-openOrder(...)
-orderStatus(...)
-execDetails(...)
-orderStatus(...)
-...
+```mermaid
+---
+config:
+  sequence:
+    actorMargin: 24
+    width: 100
+    height: 36
+    boxMargin: 4
+    messageMargin: 22
+    mirrorActors: false
+    actorFontSize: 14px
+    messageFontSize: 14px
+    noteFontSize: 13px
+---
+sequenceDiagram
+    participant Python
+    participant TWS
+
+    Python->>TWS: placeOrder(...)
+    TWS-->>Python: openOrder(...)
+    TWS-->>Python: orderStatus(...)
+    TWS-->>Python: execDetails(...)
+    TWS-->>Python: orderStatus(...)
+    TWS-->>Python: ...
 ```
 
 These callback patterns will recur throughout the guide.
@@ -173,26 +256,26 @@ The exact identifier rules differ between request IDs, order IDs, and client IDs
 
 At a high level, the native API package handles protocol mechanics such as:
 
-```text
-Python objects / method arguments
-            ↓
-message encoding
-            ↓
-TCP socket
-            ↓
-TWS
+```mermaid
+flowchart LR
+    Arguments["Python objects and method arguments"]
+    Encoding["Message encoding"]
+    Socket["TCP socket"]
+    TWS["TWS"]
+
+    Arguments --> Encoding --> Socket --> TWS
 ```
 
 and in the other direction:
 
-```text
-TWS
- ↓
-TCP socket
- ↓
-message decoding
- ↓
-EWrapper callback invocation
+```mermaid
+flowchart LR
+    TWS["TWS"]
+    Socket["TCP socket"]
+    Decoding["Message decoding"]
+    Callback["EWrapper callback invocation"]
+
+    TWS --> Socket --> Decoding --> Callback
 ```
 
 You normally work with Python methods and objects rather than manually encoding socket messages, but keeping the protocol underneath in mind makes the callback architecture much easier to reason about.
