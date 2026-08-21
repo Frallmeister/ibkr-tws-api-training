@@ -2,7 +2,8 @@
 
 The examples in this guide connect to a running Trader Workstation (TWS) process over a local TCP socket.
 
-For learning, use a **paper-trading** TWS session.
+!!! warning "Use a paper-trading session"
+    For learning, use a **paper-trading** TWS session.
 
 ## TWS must be running
 
@@ -21,9 +22,8 @@ In TWS, open the API settings and enable socket/API client connections. The exac
 For the examples, verify at least:
 
 - socket clients are enabled;
-- you know the configured socket port;
 - the TWS session is the paper-trading session you intend to use;
-- localhost connections are permitted.
+- socket port is 7497, which is default for TWS paper trading (4002 for IB Gateway).
 
 ## Ports
 
