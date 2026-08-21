@@ -17,39 +17,11 @@ The runnable file is:
 examples/01_connection/current_time.py
 ```
 
-## Prepare the environment
-
-This repository uses `uv` for its environment and dependencies.
-
-From the repository root:
-
-```powershell
-uv sync
-```
-
-The official TWS API Python client is distributed with the TWS API download rather than through a supported IBKR package on PyPI. Install the local `pythonclient` source into this repository's uv environment. With the default Windows API installation, for example:
-
-```powershell
-uv pip install "C:\TWS API\source\pythonclient"
-```
-
-If you installed the TWS API elsewhere, replace the path accordingly.
-
-Confirm that the environment can import the API:
-
-```powershell
-uv run python -c "import ibapi; print(ibapi.__file__)"
-```
-
 ## Before running the example
 
-Start TWS and log in to your paper-trading session. In the TWS API settings:
+Complete the [installation and environment](../getting-started/installation.md) and [TWS configuration](../getting-started/tws-configuration.md) steps first.
 
-1. enable socket clients;
-2. confirm the configured socket port;
-3. keep the example on the paper-trading port unless you intentionally changed it.
-
-The example uses:
+This example uses:
 
 ```python
 host = "127.0.0.1"
@@ -57,7 +29,7 @@ port = 7497
 clientId = 1
 ```
 
-`7497` is commonly used by TWS paper trading, but the value that matters is the port configured in your own TWS session.
+These are connection settings, not API constants. The configured values in your TWS session are authoritative.
 
 ## The complete example
 
