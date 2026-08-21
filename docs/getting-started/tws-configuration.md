@@ -23,7 +23,7 @@ For the examples, verify at least:
 
 - socket clients are enabled;
 - the TWS session is the paper-trading session you intend to use;
-- socket port is 7497, which is default for TWS paper trading (4002 for IB Gateway).
+- you know the configured socket port. TWS paper trading commonly defaults to `7497`; IB Gateway paper trading commonly defaults to `4002`.
 
 ## Ports
 
