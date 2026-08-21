@@ -22,14 +22,13 @@ self.placeOrder(...)
 It defines callback methods that the API invokes when TWS sends information back:
 
 ```python
-def currentTime(self, time: int) -> None:
-    ...
+def currentTime(self, time: int) -> None: ...
 
-def position(self, account, contract, position, avgCost) -> None:
-    ...
 
-def historicalData(self, reqId, bar) -> None:
-    ...
+def position(self, account, contract, position, avgCost) -> None: ...
+
+
+def historicalData(self, reqId, bar) -> None: ...
 ```
 
 A useful mental model is:
