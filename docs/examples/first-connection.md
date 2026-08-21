@@ -163,7 +163,7 @@ def nextValidId(self, orderId: int) -> None:
 
 That makes the ordering explicit.
 
-## 5. Send the request
+### 5. Send the request
 
 This line is an `EClient` operation:
 
@@ -180,7 +180,7 @@ flowchart LR
 
 There is no useful return value containing the time.
 
-## 6. Receive the response
+### 6. Receive the response
 
 After TWS responds and the API decodes the message, it invokes:
 
@@ -199,7 +199,7 @@ flowchart LR
 
 Our override converts the Unix timestamp to a timezone-aware local `datetime` and prints it.
 
-## 7. Disconnect
+### 7. Disconnect
 
 The example has achieved its purpose after one response, so the callback calls:
 
