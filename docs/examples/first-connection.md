@@ -52,9 +52,9 @@ Start TWS and log in to your paper-trading session. In the TWS API settings:
 The example uses:
 
 ```python
-host="127.0.0.1"
-port=7497
-clientId=1
+host = "127.0.0.1"
+port = 7497
+clientId = 1
 ```
 
 `7497` is commonly used by TWS paper trading, but the value that matters is the port configured in your own TWS session.
