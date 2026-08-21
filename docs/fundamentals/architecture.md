@@ -53,21 +53,16 @@ receive return value
 
 The native TWS API works differently. A historical-data request is conceptually closer to this:
 
-```text
-Python                                  TWS
-  │                                      │
-  │ reqHistoricalData(...)               │
-  ├─────────────────────────────────────►│
-  │                                      │
-  │        historicalData(...)           │
-  │◄─────────────────────────────────────┤
-  │        historicalData(...)           │
-  │◄─────────────────────────────────────┤
-  │        historicalData(...)           │
-  │◄─────────────────────────────────────┤
-  │                                      │
-  │        historicalDataEnd(...)        │
-  │◄─────────────────────────────────────┤
+```mermaid
+sequenceDiagram
+    participant Python
+    participant TWS
+
+    Python->>TWS: reqHistoricalData(...)
+    TWS-->>Python: historicalData(...)
+    TWS-->>Python: historicalData(...)
+    TWS-->>Python: historicalData(...)
+    TWS-->>Python: historicalDataEnd(...)
 ```
 
 `reqHistoricalData()` sends a request. It does not return a collection of bars. The bars arrive later through callback methods.
