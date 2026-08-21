@@ -4,6 +4,8 @@ This page defines the intended progression of the guide. It is both a learner-fa
 
 The course stays focused on the **native IBKR TWS API in Python for U.S. stocks**, primarily NASDAQ-listed equities. It teaches API concepts and workflows, not trading-strategy design.
 
+The guide also has a second objective: teach the learner to navigate Interactive Brokers' own documentation effectively. This material should make the API understandable enough that the official IBKR documentation and reference become useful tools rather than opaque collections of methods and examples.
+
 ## Status legend
 
 - **Available** — substantive material exists and is ready to study.
@@ -13,11 +15,12 @@ The course stays focused on the **native IBKR TWS API in Python for U.S. stocks*
 
 **Status: Available**
 
-Establish the local environment and TWS prerequisites before introducing more API concepts.
+Establish the local environment, TWS prerequisites, and the official documentation workflow before introducing more API concepts.
 
 - Installation and environment setup
 - TWS API configuration
 - Running the examples
+- Using the official IBKR documentation and reference
 
 ## 2. Fundamentals
 
@@ -93,8 +96,10 @@ Cross-cutting material intended to support the rest of the guide.
 
 - **Planned:** Terminology and definitions
 - **Planned:** Callback-pattern reference
-- **Planned:** Official IBKR documentation map
+- **Planned:** Topic-by-topic official IBKR documentation map
 
 ## Development rule
 
 A planned page should not be expanded merely because an API feature is interesting. New material should follow this roadmap unless there is a clear pedagogical reason to change the sequence. If the roadmap changes, update this page first so the intended structure remains explicit.
+
+Every substantive chapter should also identify the relevant current IBKR resources. The goal is that the learner gradually becomes capable of using IBKR's documentation and reference directly for lookup and continued learning.
