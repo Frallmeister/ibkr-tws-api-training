@@ -32,7 +32,7 @@ Build the mental model that makes the rest of the API predictable.
 - **Available:** Requests, responses, subscriptions, and callback patterns
 - **Available:** Request IDs, order IDs, and client IDs
 - **Available:** Core IBKR object model
-- **Planned:** Errors, warnings, and informational messages
+- **Available:** Errors, warnings, and informational messages
 
 ## 3. Contracts and stock identification
 
