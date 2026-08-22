@@ -2,7 +2,6 @@ from ibapi.client import EClient
 from ibapi.contract import Contract, ContractDetails
 from ibapi.wrapper import EWrapper
 
-
 REQUEST_ID = 1
 
 
