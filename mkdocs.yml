@@ -59,6 +59,8 @@ nav:
       - Clean shutdown: robustness/shutdown.md
   - Examples:
       - First connection: examples/first-connection.md
+      - Contract resolution: examples/contract-resolution.md
+      - Historical bars: examples/historical-bars.md
   - Reference:
       - Terminology and definitions: reference/terminology.md
       - Callback-pattern reference: reference/callback-reference.md
