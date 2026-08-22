@@ -1,209 +1,121 @@
 # SMART routing, primary exchange, and `conId`
 
-The fields `exchange`, `primaryExchange`, and `conId` all appear on a stock `Contract`, but they answer different questions.
+A U.S. stock can be listed on one exchange but traded on many different venues.
 
-For the U.S. stock workflows in this course:
+For example, a NASDAQ-listed stock does not have to execute on NASDAQ. Its shares may also be available on other exchanges, electronic venues, or dark pools.
+
+That is the problem SMART solves.
+
+## What SMART actually does
+
+When you use:
+
+```python
+contract.exchange = "SMART"
+```
+
+you are telling IBKR not to restrict the order to one specific execution venue.
+
+Instead, IBKR's SmartRouting system evaluates competing venues and decides where to send the order. According to IBKR, the router continuously searches for available prices across exchanges and dark pools and can dynamically reroute all or part of an order as market conditions change.
+
+Its routing decision can consider more than the displayed price, including transaction costs, exchange fees or rebates, available liquidity, and opportunities for price improvement.
+
+Conceptually:
 
 ```text
-exchange
-→ how the API operation should be routed
-
-primaryExchange
-→ where the stock is primarily listed
-
-conId
-→ IBKR's identifier for the specific contract
+Your order
+   |
+   v
+IBKR SmartRouting
+   |
+   +--> venue A
+   +--> venue B
+   +--> venue C
+   +--> dark pool
 ```
 
-Keeping those three roles separate makes contract definitions much easier to reason about.
+IBKR may choose one venue or route different portions of the order to different venues.
 
-## Start from the contract-resolution example
+This is why `SMART` is not the name of an exchange. It means:
 
-The runnable example from the previous chapter already exposes all three concepts:
+> Let IBKR choose the execution venue instead of directing the order to one venue yourself.
 
-```powershell
-uv run python examples/02_contracts/resolve_contract.py
-```
+For the stock examples in this course, SMART will normally be the routing choice.
 
-It sends a stock description such as:
+## Then what is `primaryExchange`?
+
+`primaryExchange` answers a different question:
+
+> Where is this stock primarily listed?
+
+For example:
 
 ```python
 contract.symbol = "NVDA"
 contract.secType = "STK"
 contract.exchange = "SMART"
 contract.currency = "USD"
-```
-
-and then prints fields from the resolved contract, including:
-
-```text
-exchange
-primaryExchange
-conId
-validExchanges
-```
-
-This chapter explains what those returned values mean.
-
-## `exchange = "SMART"` is a routing choice
-
-For most U.S. stock examples in this repository, we use:
-
-```python
-contract.exchange = "SMART"
-```
-
-`SMART` refers to IBKR's SmartRouting framework. It tells IBKR that the operation should use smart routing rather than naming one specific execution venue directly.
-
-It does **not** mean that the stock is listed on an exchange called SMART.
-
-For example:
-
-```python
-contract.symbol = "AAPL"
-contract.secType = "STK"
-contract.exchange = "SMART"
-contract.currency = "USD"
 contract.primaryExchange = "NASDAQ"
 ```
 
-contains two different exchange-related ideas:
+means:
 
 ```text
-SMART
-→ routing
-
-NASDAQ
-→ primary listing exchange
+Instrument:       NVDA stock, primarily listed on NASDAQ
+Order routing:    let IBKR SmartRoute it
 ```
 
-There is no contradiction between them.
+NASDAQ helps identify the instrument. It does **not** force the order to execute on NASDAQ.
 
-## `primaryExchange` helps identify the instrument
-
-IBKR recommends including `primaryExchange` where possible because it can help distinguish contracts that would otherwise look ambiguous.
-
-For example:
-
-```python
-contract.primaryExchange = "NASDAQ"
-```
-
-adds information about the identity of the stock. It does not tell IBKR to route the order only to NASDAQ.
-
-That distinction is important:
+That is the key distinction:
 
 ```text
-primaryExchange
-≠
-execution destination
+primaryExchange = identity
+exchange         = routing
 ```
 
-The primary exchange is especially useful while you are still describing an instrument using human-readable fields such as:
+`primaryExchange` is especially useful when a symbol alone is ambiguous.
 
-```text
-symbol
-secType
-currency
-exchange
-primaryExchange
-```
+## `conId`: IBKR's own instrument identifier
 
-A NASDAQ-listed stock and a NYSE-listed stock therefore use the same API structure:
+The previous chapter resolved a human-readable contract with:
 
 ```python
-# NASDAQ-listed example
-contract.symbol = "AAPL"
-contract.primaryExchange = "NASDAQ"
+self.reqContractDetails(REQUEST_ID, contract)
 ```
 
-```python
-# NYSE-listed example
-contract.symbol = "IBM"
-contract.primaryExchange = "NYSE"
-```
+and IBKR returned a `Contract` containing a numeric `conId`.
 
-The listing venue changes; the contract model does not.
+A `conId` is IBKR's identifier for that specific contract.
 
-## `conId` identifies the resolved IBKR contract
+So there are two different ways to identify the same stock.
 
-After contract resolution, the returned `Contract` contains a numeric `conId`:
-
-```python
-resolved_contract = contractDetails.contract
-print(resolved_contract.conId)
-```
-
-The `conId` is IBKR's contract identifier for that specific instrument.
-
-This gives us two useful ways of referring to a stock.
-
-A human-readable description:
+Human-readable description:
 
 ```text
 symbol = NVDA
 secType = STK
-exchange = SMART
 currency = USD
 primaryExchange = NASDAQ
 ```
 
-or a resolved IBKR identity:
+IBKR-resolved identity:
 
 ```text
-conId = <resolved contract identifier>
-exchange = SMART
+conId = <IBKR contract identifier>
 ```
 
-IBKR's contract-management best-practices documentation recommends using the contract identifier together with the exchange once the instrument has been resolved.
-
-Conceptually:
-
-```text
-human-readable description
-        ↓
-reqContractDetails(...)
-        ↓
-resolved Contract
-        ↓
-conId
-        ↓
-stable broker-side instrument identity
-```
+The first form is convenient when humans construct or inspect a contract. The second is useful once IBKR has already resolved exactly which instrument you mean.
 
 ## Why `conId` is useful
 
-A symbol is meaningful to a person, but it is not the strongest possible identity inside a broker API.
+A ticker is not a permanent broker-side identity.
 
-Consider what can vary around a symbol:
+Symbols can be ambiguous, reused, or require additional fields such as security type, currency, and listing exchange to identify the intended instrument.
 
-```text
-security type
-currency
-listing venue
-routing venue
-instrument with a similar or reused symbol
-```
+`conId` points directly to the contract in IBKR's contract database.
 
-A resolved `conId` removes much of that ambiguity because it refers directly to the contract in IBKR's database.
-
-That is why the workflow in this course is:
-
-```text
-start with readable stock fields
-        ↓
-resolve the contract
-        ↓
-inspect conId and exchange metadata
-        ↓
-use the resolved identity confidently
-```
-
-## Defining a contract from a known `conId`
-
-Once a `conId` is already known, a contract can be described much more directly.
-
-For example:
+After resolving a contract, you can therefore build a more direct contract such as:
 
 ```python
 from ibapi.contract import Contract
@@ -213,128 +125,65 @@ contract.conId = resolved_con_id
 contract.exchange = "SMART"
 ```
 
-Here `resolved_con_id` would come from a prior contract-resolution result or another reliable IBKR contract source.
+IBKR's contract-management guidance recommends using the resolved contract identifier together with the exchange.
 
-At that point you no longer need the symbol to establish which IBKR contract you mean.
-
-The symbol can still be useful in your own application for readability, logging, or display, but it is no longer doing the core identification work.
-
-## Do not invent a `conId`
-
-A `conId` should come from IBKR.
-
-Useful sources include:
+Notice that these two fields still solve different problems:
 
 ```text
-reqContractDetails(...)
-IBKR contract search tools
-other trusted IBKR contract metadata
+conId = which instrument?
+SMART = how should an order be routed?
 ```
 
-Do not derive it from the symbol or maintain a guessed mapping.
+## See all three concepts in the existing example
 
-The contract-resolution example gives us the native TWS API way to discover it:
+Run:
 
-```python
-self.reqContractDetails(REQUEST_ID, contract)
+```powershell
+uv run python examples/02_contracts/resolve_contract.py
 ```
 
-followed by:
-
-```python
-contract = contractDetails.contract
-print(contract.conId)
-```
-
-## `validExchanges` is related but different
-
-The previous example also prints:
-
-```python
-contractDetails.validExchanges
-```
-
-This is metadata returned by IBKR describing exchange values that are valid for the resolved contract.
-
-So these fields serve different purposes:
-
-| Field | Role |
-| --- | --- |
-| `contract.exchange` | Routing/exchange value used for the contract operation |
-| `contract.primaryExchange` | Primary listing exchange used as instrument-identification metadata |
-| `contract.conId` | IBKR identifier for the resolved contract |
-| `contractDetails.validExchanges` | Exchanges IBKR reports as valid for the contract |
-
-We do not need to choose among individual execution venues yet. For the course examples, `SMART` remains the normal routing choice.
-
-## A practical stock workflow
-
-For a stock that your application knows only by symbol, the clean workflow is:
+The example prints fields including:
 
 ```text
-1. Construct readable Contract
-
-   symbol = NVDA
-   secType = STK
-   exchange = SMART
-   currency = USD
-
-2. Resolve with reqContractDetails()
-
-3. Inspect returned Contract
-
-   primaryExchange
-   conId
-   localSymbol
-   tradingClass
-
-4. Keep the resolved identity for later API operations
-```
-
-This separates two concerns:
-
-```text
-instrument discovery
-→ which IBKR contract is this?
-
-API operation
-→ request data or submit an order for that contract
-```
-
-That separation becomes valuable in the next sections because market-data and order methods both accept `Contract` objects.
-
-## The mental model to keep
-
-```text
-symbol
-→ human-readable identifier
-
-primaryExchange
-→ helps disambiguate the listed instrument
-
 conId
-→ IBKR's contract identifier
-
-SMART
-→ routing choice for the API operation
+exchange
+primaryExchange
+validExchanges
 ```
 
-Or, for a normal smart-routed U.S. stock:
+For a typical result, interpret them like this:
+
+| Field | Meaning |
+| --- | --- |
+| `conId` | IBKR's identifier for the resolved instrument |
+| `primaryExchange` | Primary listing exchange of the stock |
+| `exchange` | Exchange/routing value on the returned contract |
+| `validExchanges` | Venues IBKR reports as valid for that contract |
+
+`validExchanges` is useful metadata, but we do not need to choose among those venues ourselves when using SMART routing.
+
+## The model to keep
+
+For the stock workflows in this course:
 
 ```text
-Instrument identity
-├── conId
-├── symbol
-└── primaryExchange
+Which instrument?
+    conId
+    symbol
+    primaryExchange
 
-Routing
-└── exchange = SMART
+How should the order reach the market?
+    exchange = "SMART"
 ```
 
-The contracts section is now complete. The next section uses these resolved stock contracts to request market data.
+Or in one sentence:
+
+> `primaryExchange` helps identify the listed stock, `conId` is IBKR's resolved identifier for it, and SMART lets IBKR choose where the order should actually execute.
+
+The contracts section is now complete. The next section uses these contracts to request market data.
 
 ## Official references
 
-- [Defining contracts in the TWS API](https://www.interactivebrokers.com/campus/trading-lessons/defining-contracts-in-the-tws-api/)
+- [IB SmartRouting](https://www.interactivebrokers.com/en/trading/smart-routing.php)
 - [Contract details](https://www.interactivebrokers.com/docs/tws-api/doc/contracts-financial-instruments/contract-details/introduction)
 - [Contract management best practices](https://www.interactivebrokers.com/docs/general/contracts/contract-management/best-practices)
