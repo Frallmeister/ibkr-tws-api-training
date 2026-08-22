@@ -119,10 +119,10 @@ so the result is roughly one month of daily trade bars restricted to regular tra
 After the basic example works, change one request parameter at a time:
 
 ```python
-durationStr="2 W"
-barSizeSetting="1 hour"
-whatToShow="ADJUSTED_LAST"
-useRTH=0
+durationStr = "2 W"
+barSizeSetting = "1 hour"
+whatToShow = "ADJUSTED_LAST"
+useRTH = 0
 ```
 
 Observe how the returned bars change while leaving the callback structure unchanged.
