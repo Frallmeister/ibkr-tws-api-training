@@ -69,7 +69,7 @@ app.connect(host="127.0.0.1", port=7497, clientId=1)
 
 `EClient` asks the operating system to open a TCP socket to TWS. Once the socket is open, TWS and the API perform an initial handshake and agree on a protocol version they both understand.
 
-After the connection is established, the Python API automatically starts its internal reader thread. That thread receives incoming socket messages and places them into a queue.
+After the connection is established, the Python API automatically starts its internal reader thread. The reader thread runs inside your Python process and receives incoming socket messages, placing them into a queue.
 
 You do not create the reader thread yourself.
 
