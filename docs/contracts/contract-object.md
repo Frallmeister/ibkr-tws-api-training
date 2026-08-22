@@ -16,24 +16,9 @@ contract.exchange = "SMART"
 contract.currency = "USD"
 ```
 
-This object does not contain market data, an order, or a position. It is an instrument description that can be passed to API requests such as contract lookup, market-data requests, and orders.
-
-## A `Contract` is a description
-
-The important mental model is:
-
-```text
-Contract
-   ↓
-describes an instrument
-   ↓
-used by API operations that need to know
-what should be looked up, priced, or traded
-```
+This object does not contain market data, an order, or a position. It is an instrument description that can be passed to API requests and commands that need to know what should be looked up, priced, or traded.
 
 A `Contract` can be only partially specified or detailed enough to identify one specific instrument.
-
-That distinction is fundamental to the TWS API.
 
 ## Core stock fields
 
@@ -48,9 +33,7 @@ For the stock workflows in this guide, the most important `Contract` fields are:
 | `primaryExchange` | The instrument's primary listing exchange when needed for disambiguation |
 | `conId` | IBKR's numeric contract identifier |
 
-We will treat `primaryExchange` and `conId` separately later because they solve important identification and routing problems of their own.
-
-For now, the key point is that IBKR identifies an instrument using **several properties**, not just its ticker symbol.
+We will treat `primaryExchange` and `conId` separately later. For now, the key point is that IBKR identifies an instrument using **several properties**, not just its ticker symbol.
 
 ## Why the symbol alone is insufficient
 
@@ -61,30 +44,12 @@ contract = Contract()
 contract.symbol = "ABC"
 ```
 
-That tells IBKR very little.
-
-The symbol does not state:
-
-- whether the instrument is a stock;
-- which currency is intended;
-- which market or routing destination is relevant;
-- whether another instrument shares the same or a similar symbol.
+That does not state whether the instrument is a stock, which currency is intended, which market is relevant, or whether another instrument shares the same or a similar symbol.
 
 Adding fields narrows the description:
 
-```python
-contract.symbol = "NVDA"
-contract.secType = "STK"
-contract.exchange = "SMART"
-contract.currency = "USD"
-```
-
-Conceptually:
-
 ```text
 symbol only
-    ↓
-broad description
     ↓
 add security type
     ↓
@@ -108,8 +73,6 @@ self.reqContractDetails(reqId, contract)
 ```
 
 and ask IBKR which contracts in its database match it.
-
-The response then arrives through `ContractDetails` callbacks.
 
 ```mermaid
 ---
@@ -140,7 +103,7 @@ We will implement this lookup properly in the contract-resolution chapter.
 
 ## `Contract` versus `ContractDetails`
 
-These two names are easy to confuse.
+These two names are easy to confuse:
 
 ```text
 Contract
@@ -150,7 +113,7 @@ ContractDetails
 = IBKR metadata returned about a matched contract
 ```
 
-A useful way to think about the flow is:
+The flow is:
 
 ```text
 your Contract description
@@ -162,25 +125,13 @@ IBKR searches its contract database
 ContractDetails result
 ```
 
-`ContractDetails` contains substantially more information than you normally provide when constructing a stock `Contract`, such as the resolved contract, valid exchanges, market rules, trading hours, and descriptive metadata.
+`ContractDetails` contains substantially more information than you normally provide when constructing a stock `Contract`, including the resolved contract and metadata such as valid exchanges, market rules, and trading hours.
 
 That richer object belongs to the later resolution chapter.
 
-## You normally construct the request object
+## Your application commonly creates the `Contract`
 
-Unlike many objects received through `EWrapper`, a `Contract` is commonly created by your own application:
-
-```python
-contract = Contract()
-contract.symbol = "AAPL"
-contract.secType = "STK"
-contract.exchange = "SMART"
-contract.currency = "USD"
-```
-
-You then pass it into an `EClient` method.
-
-So the direction is often:
+Unlike many objects received through `EWrapper`, a `Contract` is commonly created by your own application and passed into an `EClient` method:
 
 ```text
 application
@@ -192,11 +143,11 @@ EClient request or command
 TWS / IBKR
 ```
 
-IBKR may later return `Contract` objects as part of other response objects as well, but the important starting case is that **your application describes the instrument it wants to operate on**.
+IBKR may also return `Contract` objects inside response objects, but the important starting case is that **your application describes the instrument it wants to operate on**.
 
-## A `Contract` is not yet proof of identity
+## Constructing is not resolving
 
-Creating this object:
+Creating:
 
 ```python
 contract.symbol = "NVDA"
@@ -205,11 +156,7 @@ contract.exchange = "SMART"
 contract.currency = "USD"
 ```
 
-does not itself query IBKR or prove that the description resolves to the instrument you expect.
-
-It is just a Python object until you pass it to an API operation.
-
-That distinction matters:
+does not query IBKR or prove that the description resolves to the instrument you expect. It is just a Python object until you pass it to an API operation.
 
 ```text
 construct Contract
@@ -217,20 +164,20 @@ construct Contract
 resolve Contract against IBKR's database
 ```
 
-The next chapters will make that process explicit.
+The next chapters make that process explicit.
 
 ## The mental model to keep
 
 ```text
 Contract
-├── identifies/describes what instrument you mean
+├── describes what instrument you mean
 ├── is commonly constructed by your application
 ├── contains fields such as symbol, security type, exchange, and currency
 ├── may be partial or uniquely identifying
 └── is passed into API operations that need an instrument
 ```
 
-For this guide, the practical progression is:
+For this guide, the progression is:
 
 ```text
 Contract object
