@@ -12,6 +12,7 @@ Provide concise definitions for recurring TWS API terms so conceptual chapters d
 - TWS API;
 - `EClient` and `EWrapper`;
 - callback;
+- message and queue;
 - request, response, event, and subscription;
 - request ID, order ID, and client ID;
 - contract and `conId`;
