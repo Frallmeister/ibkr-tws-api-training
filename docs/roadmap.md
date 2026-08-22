@@ -41,7 +41,7 @@ Understand how IBKR represents a tradable U.S. equity before requesting data or 
 - **Available:** The `Contract` object
 - **Available:** Defining U.S. stock contracts
 - **Available:** Contract resolution and `ContractDetails`
-- **Planned:** SMART routing, primary exchange, and `conId`
+- **Available:** SMART routing, primary exchange, and `conId`
 
 ## 4. Market data
 
