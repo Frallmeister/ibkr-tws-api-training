@@ -29,7 +29,7 @@ Build the mental model that makes the rest of the API predictable.
 - **Available:** TWS API architecture
 - **Available:** `EClient` and `EWrapper`
 - **Available:** Connection lifecycle and event loop
-- **Planned:** Requests, responses, subscriptions, and callback patterns
+- **Available:** Requests, responses, subscriptions, and callback patterns
 - **Planned:** Request IDs, order IDs, and client IDs
 - **Planned:** Core IBKR object model
 - **Planned:** Errors, warnings, and informational messages
