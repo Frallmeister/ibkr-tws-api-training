@@ -24,10 +24,11 @@ If this fails, return to [Installation and environment setup](installation.md).
 
 ## Run an example
 
-For example:
+Current runnable examples include:
 
 ```powershell
 uv run python examples/01_connection/current_time.py
+uv run python examples/02_contracts/resolve_contract.py
 ```
 
 Start TWS and log in to paper trading before running examples that connect to the API.
