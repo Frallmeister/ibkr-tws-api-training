@@ -205,3 +205,4 @@ The next chapter explains the identifiers used to keep concurrent requests, clie
 ## Official references
 
 - [TWS API architecture](https://www.interactivebrokers.com/docs/tws-api/doc/architecture/introduction)
+- [Understanding Asynchronous Libraries with the TWS API](https://www.interactivebrokers.com/campus/ibkr-quant-news/understanding-asynchronous-libraries-with-the-tws-api/)
