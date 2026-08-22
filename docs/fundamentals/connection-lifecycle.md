@@ -80,8 +80,7 @@ A successful socket connection does not mean the application should immediately 
 During startup, TWS sends session information to the client. One of the callbacks is:
 
 ```python
-def nextValidId(self, orderId: int) -> None:
-    ...
+def nextValidId(self, orderId: int) -> None: ...
 ```
 
 IBKR documents `nextValidId()` as a common signal that connection setup has completed far enough for API requests to be sent. Calls made before this point may be dropped.
