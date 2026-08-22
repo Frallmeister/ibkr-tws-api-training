@@ -31,7 +31,7 @@ Build the mental model that makes the rest of the API predictable.
 - **Available:** Connection lifecycle and event loop
 - **Available:** Requests, responses, subscriptions, and callback patterns
 - **Available:** Request IDs, order IDs, and client IDs
-- **Planned:** Core IBKR object model
+- **Available:** Core IBKR object model
 - **Planned:** Errors, warnings, and informational messages
 
 ## 3. Contracts and stock identification
