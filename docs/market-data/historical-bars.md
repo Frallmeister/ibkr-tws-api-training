@@ -50,8 +50,8 @@ barSizeSetting -> size of each bar inside that window
 So:
 
 ```python
-durationStr="1 M"
-barSizeSetting="1 day"
+durationStr = "1 M"
+barSizeSetting = "1 day"
 ```
 
 means roughly one month of history divided into daily bars.
@@ -65,7 +65,7 @@ IBKR accepts duration units for seconds (`S`), days (`D`), weeks (`W`), months (
 The example uses:
 
 ```python
-whatToShow="TRADES"
+whatToShow = "TRADES"
 ```
 
 so open, high, low, and close are based on traded prices.
@@ -92,8 +92,7 @@ from ibapi.common import BarData
 
 def historicalData(self, reqId: int, bar: BarData) -> None:
     print(
-        f"{reqId}  {bar.date}  "
-        f"O={bar.open} H={bar.high} L={bar.low} C={bar.close} V={bar.volume}"
+        f"{reqId}  {bar.date}  O={bar.open} H={bar.high} L={bar.low} C={bar.close} V={bar.volume}"
     )
 ```
 
