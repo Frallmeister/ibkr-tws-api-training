@@ -1,28 +1,17 @@
 # Connection lifecycle and event loop
 
-The first example already showed the basic sequence:
+The first example used two lines that carry much of the TWS API lifecycle:
 
 ```python
 app.connect(host="127.0.0.1", port=7497, clientId=1)
 app.run()
 ```
 
-and then, later, callbacks such as:
+`connect()` establishes the API connection. `run()` keeps processing incoming API messages so that `EWrapper` callbacks can execute.
 
-```python
-def nextValidId(self, orderId: int) -> None:
-    ...
-
-
-def currentTime(self, time: int) -> None:
-    ...
-```
-
-This chapter explains what is happening between those lines.
+The important detail is that these are different responsibilities.
 
 ## The lifecycle at a glance
-
-A useful mental model is:
 
 ```mermaid
 ---
@@ -44,11 +33,11 @@ sequenceDiagram
     participant TWS
 
     Main->>TWS: connect(host, port, clientId)
-    TWS-->>Main: connection handshake
+    TWS-->>Main: protocol handshake
     TWS-->>Reader: incoming API messages
-    Reader-->>Main: place decoded message data in queue
+    Reader-->>Main: queue messages
     Main->>Main: run() processes queue
-    Main->>Main: EWrapper callback executes
+    Main->>Main: EWrapper callbacks execute
     Main->>TWS: API requests
     TWS-->>Reader: responses and events
     Reader-->>Main: queue messages
@@ -56,30 +45,7 @@ sequenceDiagram
     Main->>TWS: disconnect()
 ```
 
-There are two separate jobs to keep in mind:
-
-1. **receive network messages from TWS**;
-2. **process those messages and invoke your callbacks**.
-
-In the Python API, those jobs are not performed by the same thread.
-
-## What `connect()` does
-
-When you call:
-
-```python
-app.connect(host="127.0.0.1", port=7497, clientId=1)
-```
-
-`EClient` first asks the operating system to open a TCP socket to TWS.
-
-Once the socket is open, the API and TWS perform an initial handshake. Part of that handshake is agreeing on a protocol version that both sides understand. This matters because later messages must be encoded and decoded using the same protocol version.
-
-After the connection has been established, the Python API automatically starts its internal reader thread.
-
-That thread receives incoming socket messages and places them into a message queue.
-
-Conceptually:
+For the Python API, think in terms of this pipeline:
 
 ```text
 TWS
@@ -87,93 +53,65 @@ TWS
 reader thread
  ↓
 message queue
+ ↓
+run()
+ ↓
+EWrapper callback
 ```
 
-You do not create that reader thread yourself in the Python API.
+## What `connect()` establishes
 
-## A socket connection is not the same as API readiness
+When you call:
 
-It is tempting to think:
-
-```text
-connect() returned
-    ↓
-ready to send requests
+```python
+app.connect(host="127.0.0.1", port=7497, clientId=1)
 ```
 
-but that is too early a mental model.
+`EClient` asks the operating system to open a TCP socket to TWS. Once the socket is open, TWS and the API perform an initial handshake and agree on a protocol version they both understand.
 
-After the TCP connection is established, the API still completes its initial protocol handshake and receives session information from TWS.
+After the connection is established, the Python API automatically starts its internal reader thread. That thread receives incoming socket messages and places them into a queue.
 
-One of the callbacks sent during this startup sequence is:
+You do not create the reader thread yourself.
+
+## Connection is not yet readiness
+
+A successful socket connection does not mean the application should immediately start sending normal API requests.
+
+During startup, TWS sends session information to the client. One of the callbacks is:
 
 ```python
 def nextValidId(self, orderId: int) -> None:
     ...
 ```
 
-IBKR specifically recommends `nextValidId()` as a common signal that the connection is ready for normal API requests. Requests sent before this stage may be dropped.
+IBKR documents `nextValidId()` as a common signal that connection setup has completed far enough for API requests to be sent. Calls made before this point may be dropped.
 
-That is why the first example does this:
+That is why our first example requests the server time from inside `nextValidId()`:
 
 ```python
 def nextValidId(self, orderId: int) -> None:
-    print(f"Connected. Next valid order ID: {orderId}")
     self.reqCurrentTime()
 ```
 
-rather than:
-
-```python
-app.connect(...)
-app.reqCurrentTime()
-```
-
-We are not interested in order IDs yet. We are using this callback as an explicit readiness point.
-
-The meaning of the ID itself will be covered later in the identifiers chapter.
+The order ID itself is not important yet; we will cover IDs separately.
 
 ## What `run()` does
 
-The other crucial line is:
+The reader thread receives messages, but it does not execute your callbacks directly.
+
+`run()` processes the message queue and dispatches the corresponding `EWrapper` methods.
+
+So:
 
 ```python
 app.run()
 ```
 
-In Python, the reader thread is already receiving messages from TWS and placing them in a queue.
+means, conceptually:
 
-`run()` processes that queue. For each incoming API message it eventually dispatches the corresponding `EWrapper` callback.
+> Keep processing incoming API messages and invoking their callbacks while this client remains connected.
 
-The flow is therefore closer to:
-
-```text
-TWS
- ↓
-reader thread
- ↓
-message queue
- ↓
-run()
- ↓
-message decoding / dispatch
- ↓
-EWrapper callback
-```
-
-rather than:
-
-```text
-run() directly waits on the socket
-```
-
-This distinction becomes useful when we later introduce threading.
-
-## Why `run()` blocks
-
-`run()` is a processing loop. Once called, it keeps waiting for and processing queued API messages while the client remains connected.
-
-So this code:
+This is why `run()` blocks. Code after it normally does not execute until the connection ends.
 
 ```python
 print("before")
@@ -181,46 +119,25 @@ app.run()
 print("after")
 ```
 
-normally prints:
-
-```text
-before
-```
-
-and does not reach `after` until the API connection ends.
-
-That is why our first example calls `disconnect()` after receiving the server time. Once the connection closes, the processing loop can finish and control returns to the code after `run()`.
+will normally print `before`, process API messages for as long as the connection remains active, and only later reach `after`.
 
 ## Which thread executes callbacks?
 
-This depends on which thread calls `run()`.
+Callbacks execute on the thread that runs `run()`.
 
-Our current example does this on the main thread:
+Our current example calls:
 
 ```python
 app.run()
 ```
 
-so the queue is processed on the main thread and callbacks such as:
+on the main thread. Therefore `nextValidId()`, `currentTime()`, and other dispatched callbacks also execute on the main thread.
 
-```python
-def nextValidId(...):
-    ...
-
-
-def currentTime(...):
-    ...
-```
-
-also execute on that thread.
-
-Meanwhile, the IBKR-created reader thread continues receiving socket messages in the background.
-
-So the current example is roughly:
+Meanwhile, the IBKR-created reader thread receives socket messages in the background:
 
 ```text
 main thread
-├── app.run()
+├── run()
 ├── processes message queue
 └── executes EWrapper callbacks
 
@@ -228,24 +145,19 @@ IBKR reader thread
 └── receives socket messages and fills queue
 ```
 
-Later applications often move `app.run()` to a separate application-managed thread so that the main thread can perform other work. We do not need that architecture yet, and introducing it here would hide the lifecycle we are trying to understand.
+Later applications may put `run()` on another application-managed thread so the main thread can do other work. We do not need that structure yet.
 
-## Requests and callbacks can interleave
+## Messages can interleave
 
-Your program does not own a private request-response channel where nothing else can happen between a request and its response.
+A request does not reserve the connection until its response arrives.
 
-For example, the first connection can produce output like:
+In the first example we sent:
 
-```text
-Connected. Next valid order ID: 1
-ERROR -1 ... 2104 Market data farm connection is OK:usfarm
-ERROR -1 ... 2106 HMDS data farm connection is OK:euhmds
-IBKR server time: 2026-08-22T01:50:02+02:00
+```python
+self.reqCurrentTime()
 ```
 
-The server-time request still worked correctly. The other messages simply arrived and were processed while the application was waiting for `currentTime()`.
-
-This is normal for an event-driven API:
+but TWS could deliver system notifications before `currentTime()` arrived.
 
 ```mermaid
 ---
@@ -271,74 +183,53 @@ sequenceDiagram
     TWS-->>App: currentTime(...)
 ```
 
-A request therefore does not imply that the next callback must belong to that request.
+Nothing has gone wrong. The event loop simply processes messages as they arrive.
 
-This becomes even more important once we have several requests and subscriptions active at the same time.
+This becomes increasingly important once several requests and subscriptions are active at the same time.
 
-## What `disconnect()` does here
+## Disconnecting
 
-Our example calls:
+Our first example calls:
 
 ```python
 self.disconnect()
 ```
 
-inside `currentTime()`.
+when `currentTime()` arrives. Once the client is disconnected, `run()` can leave its processing loop and the program exits.
 
-That ends the API connection because the example has received the one result it wanted. With the client no longer connected, `run()` can leave its processing loop and the program exits.
+Long-running applications will usually remain connected and keep processing messages instead. Connection failures and reconnect behavior belong to the later robustness section.
 
-For long-running applications, disconnecting is usually an explicit lifecycle decision rather than something done after each response.
-
-Later chapters will cover subscription cancellation, broken connections, and reconnect behavior separately.
-
-## The complete first-example lifecycle
-
-Putting the pieces together:
+## The mental model to keep
 
 ```text
-main thread calls connect()
-        ↓
-TCP socket opens
-        ↓
-TWS/API protocol handshake
-        ↓
-IBKR reader thread starts
-        ↓
-incoming messages enter queue
-        ↓
-main thread calls run()
-        ↓
+connect()
+   ↓
+TCP connection + protocol handshake
+   ↓
+reader thread receives messages
+   ↓
+messages enter queue
+   ↓
 run() processes queue
-        ↓
-nextValidId(...)
-        ↓
-reqCurrentTime()
-        ↓
-other messages may arrive
-        ↓
-currentTime(...)
-        ↓
+   ↓
+EWrapper callbacks execute
+   ↓
 disconnect()
-        ↓
+   ↓
 run() exits
 ```
 
-That is the core lifecycle behind the simple example.
-
-## What to keep in mind
-
-At this stage, the important ideas are:
+The key ideas are:
 
 - `connect()` establishes the socket connection and performs the initial API handshake;
-- the Python API automatically runs an internal reader thread for incoming socket messages;
-- the reader thread places incoming messages on a queue;
-- `run()` processes that queue and dispatches `EWrapper` callbacks;
-- `nextValidId()` is a useful readiness signal before sending normal requests;
+- the Python API automatically creates a reader thread for incoming socket messages;
+- the reader thread places messages on a queue;
+- `run()` processes that queue and dispatches callbacks;
+- `nextValidId()` is a useful readiness signal before normal requests are sent;
 - callbacks execute on whichever thread is running `run()`;
-- unrelated events can arrive between a request and its response;
-- `disconnect()` ends the connection and allows the processing loop to terminate.
+- unrelated events may arrive between a request and its response.
 
-The next chapter builds on this lifecycle by separating the different interaction patterns the API uses: single responses, finite multi-message responses, subscriptions, and ongoing lifecycle events.
+The next chapter builds on this by separating the different request and callback patterns used throughout the API.
 
 ## Official references
 
