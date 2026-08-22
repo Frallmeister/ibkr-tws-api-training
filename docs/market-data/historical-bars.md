@@ -12,8 +12,6 @@ It requests one month of daily NVDA bars.
 
 ## The request
 
-The core call is:
-
 ```python
 self.reqHistoricalData(
     reqId=REQUEST_ID,
@@ -29,58 +27,40 @@ self.reqHistoricalData(
 )
 ```
 
-The parameters describe **which instrument, which time range, and what kind of bars IBKR should return**.
-
-| Parameter | Value in the example | Meaning |
+| Parameter | Example | Meaning |
 | --- | --- | --- |
 | `reqId` | `1` | Correlates callbacks with this request |
-| `contract` | NVDA stock contract | Instrument to query |
+| `contract` | NVDA | Instrument to query |
 | `endDateTime` | `""` | End at the current time |
 | `durationStr` | `"1 M"` | Look back one month |
-| `barSizeSetting` | `"1 day"` | Aggregate data into daily bars |
+| `barSizeSetting` | `"1 day"` | Return one-day bars |
 | `whatToShow` | `"TRADES"` | Build bars from traded prices |
-| `useRTH` | `1` | Use regular trading hours only |
-| `formatDate` | `1` | Return the normal date representation |
-| `keepUpToDate` | `False` | One finite historical request |
+| `useRTH` | `1` | Regular trading hours only |
+| `formatDate` | `1` | Standard date representation |
+| `keepUpToDate` | `False` | Finite request, not a subscription |
 | `chartOptions` | `[]` | Internal options; leave empty |
 
-## Duration and bar size are separate
-
-These two parameters are easy to confuse:
+The most important new idea is that **duration and bar size describe different dimensions of the request**:
 
 ```text
-durationStr    -> how far back to request
-barSizeSetting -> size of each returned bar
+durationStr    -> total historical window
+barSizeSetting -> size of each bar inside that window
 ```
 
-For example:
+So:
 
 ```python
 durationStr="1 M"
 barSizeSetting="1 day"
 ```
 
-means approximately one month of data, divided into one-day bars.
+means roughly one month of history divided into daily bars.
 
-Valid duration units include seconds (`S`), days (`D`), weeks (`W`), months (`M`), and years (`Y`). Valid bar sizes range from seconds through months; the exact accepted strings are documented by IBKR.
+IBKR accepts duration units for seconds (`S`), days (`D`), weeks (`W`), months (`M`), and years (`Y`). Bar sizes range from seconds through months. Not every duration/bar-size combination is practical or allowed; the limits matter mainly once we start requesting small intraday bars.
 
-The two values cannot be chosen independently without limit. IBKR restricts how much data can be returned for a given bar size, which becomes especially important for small intraday bars. We will deal with those limits when we start requesting intraday data.
+## What does a bar represent?
 
-## `endDateTime`
-
-An empty string means:
-
-```python
-endDateTime=""
-```
-
-> end the request at the current time.
-
-You can also provide a specific end date/time. That becomes useful for reproducible historical windows, but the first example keeps the request relative to now.
-
-## `whatToShow`
-
-Historical bars are not always built from the same underlying data.
+`whatToShow` chooses the underlying data used to build the bars.
 
 The example uses:
 
@@ -88,39 +68,23 @@ The example uses:
 whatToShow="TRADES"
 ```
 
-so the returned OHLC values describe traded prices.
+so open, high, low, and close are based on traded prices.
 
-Another stock-relevant choice is:
+For stocks, another important value is:
 
 ```text
 ADJUSTED_LAST
 ```
 
-which IBKR documents as adjusted for splits and dividends. Other values such as `MIDPOINT`, `BID`, and `ASK` produce different kinds of historical series.
+which IBKR documents as adjusted for splits and dividends. Other values include `MIDPOINT`, `BID`, and `ASK`.
 
-So `whatToShow` is not a cosmetic option: it changes what the bar represents.
+`whatToShow` therefore changes the meaning of the returned series, not just its formatting.
 
-## Regular versus extended hours
+`useRTH=1` restricts the request to regular trading hours. `useRTH=0` allows data outside regular trading hours where available.
 
-```python
-useRTH=1
-```
+## The response
 
-requests data from regular trading hours only.
-
-Using:
-
-```python
-useRTH=0
-```
-
-allows data outside regular trading hours where available.
-
-For daily stock examples in this course we start with regular-session bars so the result is easy to interpret.
-
-## The callbacks
-
-The request produces repeated `historicalData()` callbacks:
+IBKR calls `historicalData()` once for each returned bar:
 
 ```python
 from ibapi.common import BarData
@@ -133,30 +97,15 @@ def historicalData(self, reqId: int, bar: BarData) -> None:
     )
 ```
 
-Each `BarData` object contains fields such as:
+`BarData` contains fields including `date`, `open`, `high`, `low`, `close`, `volume`, `wap`, and `barCount`.
 
-```text
-date
-open
-high
-low
-close
-volume
-wap
-barCount
-```
-
-For this example we print only OHLCV.
-
-When all bars have been delivered, IBKR calls:
+When the finite response is complete, IBKR calls:
 
 ```python
 def historicalDataEnd(self, reqId: int, start: str, end: str) -> None:
     print(f"Historical request {reqId} complete: {start} -> {end}")
     self.disconnect()
 ```
-
-So the response shape is:
 
 ```mermaid
 ---
@@ -183,9 +132,9 @@ sequenceDiagram
     TWS-->>App: historicalDataEnd(reqId, start, end)
 ```
 
-This is the same finite multi-callback pattern introduced earlier with contract resolution, now carrying actual market data.
+This is the same finite multi-callback pattern used for contract resolution, now carrying market data.
 
-## Run the example
+## Run it
 
 Start TWS in paper trading and run:
 
@@ -193,22 +142,9 @@ Start TWS in paper trading and run:
 uv run python examples/03_market_data/historical_bars.py
 ```
 
-A successful result will contain a sequence of daily bars followed by the completion message. Exact dates and prices depend on when you run it.
+The result should be a sequence of daily OHLCV bars followed by the completion message.
 
-If IBKR rejects the request because of market-data entitlements, the later market-data permissions chapter explains that separately.
-
-## What to change first
-
-Once the example works, the most useful experiments are to change one request parameter at a time:
-
-```python
-durationStr="2 W"
-barSizeSetting="1 hour"
-whatToShow="ADJUSTED_LAST"
-useRTH=0
-```
-
-The point is to observe how each parameter changes the returned data rather than hiding `reqHistoricalData()` behind a helper abstraction.
+Market-data entitlements are covered separately in the permissions chapter.
 
 ## Official references
 
@@ -216,4 +152,4 @@ The point is to observe how each parameter changes the returned data rather than
 - [Receiving historical bars](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-bars/receiving-historical-bars)
 - [Duration](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-bars/duration)
 - [Historical bar sizes](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-bars/historical-bar-sizes)
-- [Historical data types](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-bar-what-to-show/adjusted-last)
+- [`ADJUSTED_LAST`](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-historical/historical-bar-what-to-show/adjusted-last)
