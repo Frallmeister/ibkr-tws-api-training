@@ -223,5 +223,4 @@ The next chapter will turn this static contract definition into an actual API in
 ## Official references
 
 - [Defining contracts in the TWS API](https://www.interactivebrokers.com/campus/trading-lessons/defining-contracts-in-the-tws-api/)
-- [How to define contracts using the Python TWS API](https://www.interactivebrokers.com/campus/ibkr-quant-news/how-to-define-contracts-using-the-python-tws-api/)
 - [Contract details](https://www.interactivebrokers.com/docs/tws-api/doc/contracts-financial-instruments/contract-details/introduction)
