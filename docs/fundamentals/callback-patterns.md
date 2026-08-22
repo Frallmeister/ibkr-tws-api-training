@@ -205,6 +205,3 @@ The next chapter explains the identifiers used to keep concurrent requests, clie
 ## Official references
 
 - [TWS API architecture](https://www.interactivebrokers.com/docs/tws-api/doc/architecture/introduction)
-- [Contract details](https://www.interactivebrokers.com/docs/tws-api/doc/contracts-financial-instruments/contract-details/introduction)
-- [Requesting market data](https://www.interactivebrokers.com/docs/tws-api/doc/quick-start/requesting-market-data)
-- [Placing orders using the TWS Python API](https://www.interactivebrokers.com/campus/trading-lessons/python-placing-orders/)
