@@ -48,7 +48,7 @@ Understand how IBKR represents a tradable U.S. equity before requesting data or 
 Learn the main historical and streaming data interfaces used for stocks.
 
 - **Available:** Historical bars
-- **Planned:** Streaming market data
+- **Available:** Streaming market data
 - **Planned:** Tick types and attributes
 - **Planned:** Real-time bars
 - **Planned:** Market-data types and permissions
