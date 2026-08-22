@@ -184,6 +184,5 @@ The contracts section is now complete. The next section uses these contracts to 
 
 ## Official references
 
-- [IB SmartRouting](https://www.interactivebrokers.com/en/trading/smart-routing.php)
 - [Contract details](https://www.interactivebrokers.com/docs/tws-api/doc/contracts-financial-instruments/contract-details/introduction)
 - [Contract management best practices](https://www.interactivebrokers.com/docs/general/contracts/contract-management/best-practices)
