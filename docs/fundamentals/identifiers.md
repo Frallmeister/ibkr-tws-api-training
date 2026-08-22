@@ -50,6 +50,7 @@ The corresponding callbacks return the same ID:
 ```python
 def contractDetails(self, reqId, contractDetails): ...
 
+
 def contractDetailsEnd(self, reqId): ...
 ```
 
@@ -100,8 +101,7 @@ Unlike an ordinary `reqId`, you should not simply restart order numbering from a
 TWS provides a valid starting point through:
 
 ```python
-def nextValidId(self, orderId: int) -> None:
-    ...
+def nextValidId(self, orderId: int) -> None: ...
 ```
 
 which you already saw during connection startup.
