@@ -38,7 +38,7 @@ Build the mental model that makes the rest of the API predictable.
 
 Understand how IBKR represents a tradable U.S. equity before requesting data or placing orders.
 
-- **Planned:** The `Contract` object
+- **Available:** The `Contract` object
 - **Planned:** Defining U.S. stock contracts
 - **Planned:** Contract resolution and `ContractDetails`
 - **Planned:** SMART routing, primary exchange, and `conId`
