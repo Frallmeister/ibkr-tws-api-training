@@ -2,13 +2,7 @@
 
 A `Contract` describes the instrument your application means. Contract resolution asks IBKR to compare that description against its contract database and return the matching instrument information.
 
-The request is:
-
-```python
-self.reqContractDetails(reqId, contract)
-```
-
-and the response follows the finite callback pattern introduced earlier:
+The interaction is:
 
 ```mermaid
 ---
@@ -36,7 +30,7 @@ sequenceDiagram
 
 There may be zero, one, or several `contractDetails(...)` callbacks before the end marker.
 
-## What contract resolution does
+## From description to resolved contract
 
 Suppose the application creates:
 
@@ -48,54 +42,21 @@ contract.exchange = "SMART"
 contract.currency = "USD"
 ```
 
-This is a useful description, but it is still only a local Python object.
-
 Calling:
 
 ```python
 self.reqContractDetails(1, contract)
 ```
 
-asks IBKR:
+asks IBKR which contracts in its database match that description.
 
-> Which contract or contracts in your database match this description?
-
-IBKR then returns a `ContractDetails` object for each match.
-
-Conceptually:
-
-```text
-local Contract description
-        ↓
-reqContractDetails(...)
-        ↓
-IBKR contract database
-        ↓
-zero / one / many matches
-        ↓
-ContractDetails callbacks
-        ↓
-contractDetailsEnd(...)
-```
-
-## `ContractDetails` contains a resolved `Contract`
-
-The callback receives a `ContractDetails` object:
-
-```python
-def contractDetails(self, reqId: int, contractDetails: ContractDetails) -> None:
-    ...
-```
-
-One of its most important attributes is:
+Each match arrives as a `ContractDetails` object. Its most important attribute for now is:
 
 ```python
 contractDetails.contract
 ```
 
-which is the matched `Contract` returned by IBKR.
-
-That resolved contract can contain identifying fields that were not present in the original request, including:
+which contains the matched `Contract` returned by IBKR. It can include identifying fields that were not supplied in the request, such as:
 
 ```text
 conId
@@ -104,21 +65,19 @@ localSymbol
 tradingClass
 ```
 
-`ContractDetails` itself also contains metadata such as:
+The surrounding `ContractDetails` object adds metadata such as `longName`, `validExchanges`, `minTick`, trading hours, and `timeZoneId`.
+
+So the distinction is:
 
 ```text
-longName
-validExchanges
-minTick
-orderTypes
-tradingHours
-liquidHours
-timeZoneId
+Contract
+= description sent to IBKR
+
+ContractDetails
+= metadata returned for one matching contract
 ```
 
-We do not need every field yet. The useful lesson is that resolution turns a compact instrument description into broker-supplied instrument metadata.
-
-## The runnable example
+## Runnable example
 
 The example for this chapter is:
 
@@ -126,7 +85,7 @@ The example for this chapter is:
 examples/02_contracts/resolve_contract.py
 ```
 
-It deliberately requests NVDA without specifying `primaryExchange` so that the returned contract shows what IBKR resolved.
+It deliberately leaves out `primaryExchange` so that you can see what IBKR resolves and returns.
 
 ```python
 from ibapi.client import EClient
@@ -192,66 +151,29 @@ if __name__ == "__main__":
     main()
 ```
 
-The application structure is intentionally the same as the first connection example. The new concepts are the `Contract`, the request ID, and the pair of contract-detail callbacks.
+The application structure is intentionally the same as `current_time.py`. The new pieces are the `Contract`, request ID, and contract-detail callbacks.
 
-## Trace the example
+## What happens when it runs
 
-### 1. Wait for API readiness
-
-The request starts from:
-
-```python
-def nextValidId(self, orderId: int) -> None:
-```
-
-As before, this callback is used as the signal that the connection is ready for API requests.
-
-### 2. Send one contract-details request
-
-```python
-self.reqContractDetails(REQUEST_ID, create_stock_contract())
-```
-
-The integer `REQUEST_ID` belongs to this request. It is not a `clientId`, `orderId`, or `conId`.
-
-The same request ID comes back in the corresponding callbacks.
-
-### 3. Receive each match
-
-For every matching contract, TWS invokes:
-
-```python
-def contractDetails(self, reqId: int, contractDetails: ContractDetails) -> None:
-```
-
-The example prints both fields from the resolved `Contract` and metadata from the surrounding `ContractDetails` object.
-
-This is a good place to see the distinction directly:
+`nextValidId()` again acts as the connection-readiness signal. From there:
 
 ```text
-contractDetails.contract.conId
-contractDetails.contract.primaryExchange
-contractDetails.longName
-contractDetails.validExchanges
+reqContractDetails(reqId=1, contract)
+        ↓
+contractDetails(reqId=1, match)
+        ↓ possibly repeated
+contractDetailsEnd(reqId=1)
+        ↓
+disconnect
 ```
 
-### 4. Wait for the end marker
+The request ID belongs to this request. It is not a `clientId`, `orderId`, or `conId`.
 
-The application must not assume that the first callback is the final callback.
-
-Completion is signalled separately:
-
-```python
-def contractDetailsEnd(self, reqId: int) -> None:
-```
-
-Only then does the example print the match count and disconnect.
-
-This is exactly the request → many callbacks → end-marker pattern from the callback-patterns chapter.
+The important detail is that the application does **not** disconnect after the first match. `contractDetailsEnd(...)` is the signal that no more results remain for that request.
 
 ## Run it
 
-Start TWS in paper trading with API socket clients enabled, then run from the repository root:
+Start TWS in paper trading with API socket clients enabled, then run:
 
 ```powershell
 uv run python examples/02_contracts/resolve_contract.py
@@ -277,59 +199,42 @@ Match 1 for request 1
 Request 1 complete. Matches: 1
 ```
 
-You may also see informational messages such as 2104 and 2106 interleaved with this output. Those are handled through the same error/status channel discussed in the fundamentals section.
+Informational messages such as 2104 and 2106 may appear between these lines, just as they did in the first connection example.
 
 ## Zero, one, or several matches
 
-`reqContractDetails()` is unusual because the supplied `Contract` does not have to identify exactly one instrument.
+A broad `Contract` description can match several instruments. Each match produces its own `contractDetails(...)` callback with the same `reqId`.
 
-A broad description can produce several callbacks:
+A more specific description may produce one match. If no `contractDetails(...)` callback arrives before `contractDetailsEnd(...)`, no matching contract details were returned.
 
-```text
-request 7
-  ↓
-contractDetails(reqId=7, match A)
-contractDetails(reqId=7, match B)
-contractDetails(reqId=7, match C)
-contractDetailsEnd(reqId=7)
-```
+This makes contract resolution a useful way to investigate instrument identity before relying on a contract in later market-data or order workflows.
 
-A sufficiently specific description may produce one.
+## Things to inspect yourself
 
-If no `contractDetails(...)` callback arrives before `contractDetailsEnd(...)`, the request produced no matching contract details.
+After the example works, change one thing at a time:
 
-The request ID lets the application distinguish this result stream from other requests that may be active at the same time.
-
-## What to inspect yourself
-
-After the example works, change one field at a time:
-
-- change `NVDA` to `AAPL`, `MSFT`, or `AMD`;
+- replace `NVDA` with `AAPL`, `MSFT`, or `AMD`;
 - add `primaryExchange = "NASDAQ"` and compare the result;
-- remove `currency = "USD"` and observe whether the result set changes;
-- remove `exchange = "SMART"` and inspect what IBKR returns;
+- remove `currency = "USD"` or `exchange = "SMART"` and inspect the matches;
 - print `contractDetails.minTick` or `contractDetails.timeZoneId`;
-- temporarily print `vars(contractDetails)` to see how much metadata the object contains.
+- temporarily print `vars(contractDetails)` to see the full returned object.
 
-The goal is to understand how the specificity of the request affects what IBKR resolves, not to build a general-purpose contract-discovery abstraction yet.
+For now, keep the resolution process visible rather than hiding it behind a general contract-discovery helper.
 
 ## The mental model to keep
 
 ```text
 Contract
-= what your application asks IBKR to resolve
-
-ContractDetails
-= metadata IBKR returns for one matching contract
+→ what your application asks IBKR to resolve
 
 contractDetails(...)
-= one match
+→ one matching ContractDetails object
 
 contractDetailsEnd(...)
-= no more matches for that request
+→ no more matches for that request
 ```
 
-The next chapter will focus on three fields that are now visible in context: `exchange="SMART"`, `primaryExchange`, and `conId`.
+The next chapter focuses on three fields that are now visible in context: `exchange="SMART"`, `primaryExchange`, and `conId`.
 
 ## Official references
 
