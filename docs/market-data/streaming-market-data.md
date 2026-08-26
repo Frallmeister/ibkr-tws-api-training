@@ -186,4 +186,4 @@ The next chapter explains the numeric tick types and their meanings. Market-data
 
 - [Requesting market data](https://www.interactivebrokers.com/docs/tws-api/doc/quick-start/requesting-market-data)
 - [Cancel watchlist data](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-live/top-of-book-l-1/cancel-watchlist-data)
-- [TWS API architecture](https://www.interactivebrokers.com/docs/tws-api/doc/architecture/introduction)
+- [Python Threading](https://docs.python.org/3/library/threading.html)
