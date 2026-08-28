@@ -125,7 +125,7 @@ That state-building pattern is introduced later. For now, focus on interpreting 
 In the streaming example we use:
 
 ```python
-genericTickList=""
+genericTickList = ""
 ```
 
 That requests the standard market-data fields that IBKR normally returns for the contract.
@@ -135,7 +135,7 @@ IBKR also supports additional fields through the `genericTickList` argument. Tho
 For example:
 
 ```python
-genericTickList="232"
+genericTickList = "232"
 ```
 
 requests an additional generic tick defined by IBKR.
