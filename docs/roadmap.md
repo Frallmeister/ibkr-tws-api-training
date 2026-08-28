@@ -49,7 +49,7 @@ Learn the main historical and streaming data interfaces used for stocks.
 
 - **Available:** Historical bars
 - **Available:** Streaming market data
-- **Planned:** Tick types and attributes
+- **Available:** Tick types and attributes
 - **Planned:** Real-time bars
 - **Planned:** Market-data types and permissions
 
