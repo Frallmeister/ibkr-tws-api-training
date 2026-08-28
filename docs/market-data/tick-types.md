@@ -239,4 +239,4 @@ The exact fields and update timing depend on the instrument, market state, and a
 ## Official references
 
 - [Available tick types](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-live/available-tick-types/introduction)
-- [Python API – Requesting Market Data](https://www.interactivebrokers.com/campus/trading-lessons/python-receiving-market-data/)
+- [Requesting market data](https://www.interactivebrokers.com/docs/tws-api/doc/quick-start/requesting-market-data)
