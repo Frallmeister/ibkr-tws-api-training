@@ -180,34 +180,7 @@ def tickPrice(self, reqId, tickType, price, attrib):
 
 For an ordinary first market-data consumer, the price itself and the tick type are usually the primary pieces of information. The attributes become useful when the application needs to reason more carefully about the status or provenance of a quote.
 
-## Reading a callback from left to right
-
-Suppose the API invokes:
-
-```text
-tickPrice(2, 1, 181.42, attrib)
-```
-
-You can interpret it systematically:
-
-1. `reqId=2` — this belongs to subscription 2;
-2. `tickType=1` — `TickTypeEnum.BID`, so this is a bid-price update;
-3. `price=181.42` — the new bid price is 181.42;
-4. `attrib` — additional metadata qualifies that price tick.
-
-Likewise:
-
-```text
-tickSize(2, 3, 400)
-```
-
-means:
-
-1. subscription 2;
-2. tick type 3 = `ASK_SIZE`;
-3. the ask-size field has been updated to the supplied size value.
-
-This is the central mental model for `reqMktData()` callbacks:
+The central mental model for `reqMktData()` callbacks is:
 
 ```text
 request ID  -> which subscription?
