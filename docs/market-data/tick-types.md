@@ -54,7 +54,7 @@ IBKR represents tick types with integer identifiers. For example:
 | `CLOSE` | 9 | `tickPrice()` |
 | `OPEN` | 14 | `tickPrice()` |
 
-The complete list is much larger. The important pattern is that the numeric identifier is part of the protocol, while your application normally wants a meaningful name.
+The [complete list of available tick types](https://www.interactivebrokers.com/docs/tws-api/doc/market-data-live/available-tick-types/introduction) is much larger. The important pattern is that the numeric identifier is part of the protocol, while your application normally wants a meaningful name.
 
 ## Use `TickTypeEnum` instead of magic numbers
 
