@@ -62,8 +62,7 @@ def realtimeBar(
     volume,
     wap,
     count,
-):
-    ...
+): ...
 ```
 
 The callback contains the familiar OHLC fields together with additional values:
@@ -108,7 +107,7 @@ If an application needs a larger interval, it can aggregate successive 5-second 
 For this stock example we use:
 
 ```python
-whatToShow="TRADES"
+whatToShow = "TRADES"
 ```
 
 That is the natural choice when you want bars based on executed trades.
@@ -120,13 +119,13 @@ Other values exist for other purposes. Rather than duplicating the complete refe
 The `useRTH` flag controls whether data outside regular trading hours is included:
 
 ```python
-useRTH=True
+useRTH = True
 ```
 
 means the subscription should only include regular trading hours.
 
 ```python
-useRTH=False
+useRTH = False
 ```
 
 allows eligible data outside regular trading hours as well.
